@@ -20,18 +20,18 @@ import org.joda.time.format.DateTimeFormatter;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 
+import com.flightsearch.json.dailyfare.DailyFares;
+import com.flightsearch.json.dailyfare.Flight;
+import com.flightsearch.json.dailyfare.Trip;
+import com.flightsearch.json.monthlyfare.Fare;
+import com.flightsearch.json.monthlyfare.MonthlyFare;
+import com.flightsearch.json.schedule.Airport;
+import com.flightsearch.json.schedule.Schedule;
+import com.flightsearch.pojo.FlightMatch;
+import com.flightsearch.printers.LongWeekendPrinter;
+import com.flightsearch.printers.MatchPrinter;
+import com.flightsearch.printers.WeekendPrinter;
 import com.google.gson.Gson;
-import com.meiyo.json.dailyfare.DailyFares;
-import com.meiyo.json.dailyfare.Flight;
-import com.meiyo.json.dailyfare.Trip;
-import com.meiyo.json.monthlyfare.Fare;
-import com.meiyo.json.monthlyfare.MonthlyFare;
-import com.meiyo.json.schedule.Airport;
-import com.meiyo.json.schedule.Schedule;
-import com.meiyo.pojo.FlightMatch;
-import com.meiyo.printers.LongWeekendPrinter;
-import com.meiyo.printers.MatchPrinter;
-import com.meiyo.printers.WeekendPrinter;
 
 /**
  * A Ryanair weekend flight searcher. It will find:
@@ -150,12 +150,12 @@ public class FlightSearch {
 
 			// we now have a list of potential outbound and return flights.. we now need to match them for valid combinations!
 			for (Flight outbound : outboundFlights) {
-				com.meiyo.json.dailyfare.Fare outboundLowest = outbound.getLowestFare();
+				com.flightsearch.json.dailyfare.Fare outboundLowest = outbound.getLowestFare();
 				if (outboundLowest == null) {
 					continue;
 				}
 				for (Flight returnFlight : returnFlights) {
-					com.meiyo.json.dailyfare.Fare returnLowest = returnFlight.getLowestFare();
+					com.flightsearch.json.dailyfare.Fare returnLowest = returnFlight.getLowestFare();
 					if (returnLowest == null) {
 						continue;
 					}
@@ -188,7 +188,7 @@ public class FlightSearch {
 
 	private static List<Flight> filterOutboundCandidateFlights(Trip trip, int budget) {
 		List<Flight> candidates = new ArrayList<Flight>();
-		for (com.meiyo.json.dailyfare.Date scheduleDate : trip.getDates()) {
+		for (com.flightsearch.json.dailyfare.Date scheduleDate : trip.getDates()) {
 			LocalDate flightDate = LocalDateTime.parse(scheduleDate.getDateOut(), SOURCE_DATETIME_FORMATTER).toLocalDate();
 			if (!isOutboundDay(flightDate)) {
 				continue;
@@ -212,7 +212,7 @@ public class FlightSearch {
 
 				// lastly, we need to make sure this fare is below our threshold
 				// TODO are any of these fares disabled or a bad class?
-				com.meiyo.json.dailyfare.Fare lowestFare = flight.getLowestFare();
+				com.flightsearch.json.dailyfare.Fare lowestFare = flight.getLowestFare();
 				if (lowestFare != null && lowestFare.getAmount() < budget) {
 					// we have a low price flight at a candidate time
 					flight.setOrigin(trip.getOrigin());
@@ -228,7 +228,7 @@ public class FlightSearch {
 
 	private static List<Flight> filterReturnCandidateFlights(Trip trip, int budget) {
 		List<Flight> candidates = new ArrayList<Flight>();
-		for (com.meiyo.json.dailyfare.Date scheduleDate : trip.getDates()) {
+		for (com.flightsearch.json.dailyfare.Date scheduleDate : trip.getDates()) {
 			LocalDate flightDate = LocalDateTime.parse(scheduleDate.getDateOut(), SOURCE_DATETIME_FORMATTER).toLocalDate();
 			if (!isReturnDay(flightDate)) {
 				continue;
@@ -242,7 +242,7 @@ public class FlightSearch {
 
 				// lastly, we need to make sure this fare is below our threshold
 				// TODO are any of these fares disabled or a bad class?
-				com.meiyo.json.dailyfare.Fare lowestFare = flight.getLowestFare();
+				com.flightsearch.json.dailyfare.Fare lowestFare = flight.getLowestFare();
 				if (lowestFare != null && lowestFare.getAmount() < budget) {
 					// we have a low price flight at a candidate time
 					flight.setOrigin(trip.getOrigin());
