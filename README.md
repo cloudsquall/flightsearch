@@ -4,3 +4,5 @@ Ryanair weekend flight searcher. It will find:
 - under X return price
 - with or without UK & Ireland destinations
 - including long weekends (or not)
+
+Automatically outputs results to CSV or other implemented printers.
