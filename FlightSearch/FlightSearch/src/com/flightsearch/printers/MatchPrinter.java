@@ -31,16 +31,16 @@ public abstract class MatchPrinter {
 	static {
 		df.setRoundingMode(RoundingMode.CEILING);
 	}
-	private static SimpleDateFormat targetDateFormat = new SimpleDateFormat("EEE dd-MMM HH:mm");  
+	private static SimpleDateFormat targetDateFormat = new SimpleDateFormat("EEE dd-MMM HH:mm");
 
 	final static String CSV_SEPARATOR = ",";
 
 	private Map<String, List<FlightMatch>> shortlist = new HashMap<String, List<FlightMatch>>();
 
 	final static String LINE_SEPARATOR = System.getProperty("line.separator");
-	
+
 	private static Properties airports = null;
-	
+
 	public static Properties getAirports() {
 		if (airports == null) {
 			airports = getProperties("airports");
@@ -48,7 +48,7 @@ public abstract class MatchPrinter {
 
 		return airports;
 	}
-	
+
 	public static Properties getProperties(String fileName) {
 		String file = fileName + ".properties";
 		Properties props = new Properties();
@@ -74,7 +74,7 @@ public abstract class MatchPrinter {
 
 		return props;
 	}
-	
+
 
 	public static void log(String outbound, String suffix, Object s) throws IOException {
 		String fileName = "flights-output-" + outbound + "-" + suffix + ".csv";
@@ -94,7 +94,7 @@ public abstract class MatchPrinter {
 			return o1.getTotal().compareTo(o2.getTotal());
 		}
 	}
-	
+
 	public class DateMatchComparator implements Comparator<FlightMatch> {
 		@Override
 		public int compare(FlightMatch o1, FlightMatch o2) {
@@ -106,14 +106,14 @@ public abstract class MatchPrinter {
 			return o1.getOutboundTime().compareTo(o2.getReturnTime());
 		}
 	}
-	
+
 	public void print(List<FlightMatch> matches) throws IOException {
 		Collections.sort(matches, new PriceMatchComparator());
 		for (FlightMatch match : matches) {
 			if (!fitsPrinterCriteria(match)) {
 				continue;
 			}
-			
+
 			String destination = match.getOutboundFlight().getDestination();
 			List<FlightMatch> shortDest = shortlist.get(destination);
 			if (shortDest == null) {
@@ -126,18 +126,18 @@ public abstract class MatchPrinter {
 			shortDest.add(match);
 			shortlist.put(destination, shortDest);
 		}
-		log(matches.get(0).getOutboundFlight().getOrigin(), getFileSuffix(), "Price,Destination,OutTime,EmailText,PlainText"); 
+		log(matches.get(0).getOutboundFlight().getOrigin(), getFileSuffix(), "Price,Destination,OutTime,EmailText,PlainText");
 		for (String destination : shortlist.keySet()) {
 			List<FlightMatch> groupedMatches = shortlist.get(destination);
 			Collections.sort(groupedMatches, new DateMatchComparator());
 			for (FlightMatch match : groupedMatches) {
 				Flight outbound = match.getOutboundFlight();
 				Flight rtn = match.getReturnFlight();
-				String total = df.format(match.getTotal()); 
+				String total = df.format(match.getTotal());
 				//log("user", "Matching flight: " + total + " " + match.getOutboundFlight().toPrintString() + " " + match.getReturnFlight().toPrintString());
 
 				log(outbound.getOrigin(), getFileSuffix(), total + CSV_SEPARATOR + outbound.toPrintString(CSV_SEPARATOR) + CSV_SEPARATOR + "\"" + toEmailString(match, outbound.getDestination(), total) + "\"" + CSV_SEPARATOR + "\"" + toPlainTextString(match, outbound.getDestination(), total) + "\"");
-			}	
+			}
 		}
 	}
 
@@ -169,7 +169,7 @@ public abstract class MatchPrinter {
 			return null;
 		}
 	}
-	
+
 	private static String toPlainTextString(FlightMatch match, String destination, String total) {
 		//Liverpool, UK|15 Dec 08:45 PM|17 Dec 08:25 PM|63.99
 		String airportName = destination;
@@ -188,13 +188,13 @@ public abstract class MatchPrinter {
 			e.printStackTrace();
 		}
 		try {
-			return airportName + " on " + targetDateFormat.format(match.getOutboundTime()) + " returning " + targetDateFormat.format(match.getReturnTime()) + " for €" + total + "</td></tr>";
+			return airportName + " on " + targetDateFormat.format(match.getOutboundTime()) + " returning " + targetDateFormat.format(match.getReturnTime()) + " for \uFFFD" + total + "</td></tr>";
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return null;
 	}
-	
+
 	public abstract boolean fitsPrinterCriteria(FlightMatch match);
 }

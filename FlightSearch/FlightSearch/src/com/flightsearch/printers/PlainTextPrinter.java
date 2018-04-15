@@ -26,7 +26,7 @@ public class PlainTextPrinter extends MatchPrinter {
 	final static String SEPARATOR = System.getProperty("line.separator");
 	final static String CSV_SEPARATOR = ",";
 
-	private static SimpleDateFormat targetDateFormat = new SimpleDateFormat("dd-MMM hh:mmaaa");  
+	private static SimpleDateFormat targetDateFormat = new SimpleDateFormat("dd-MMM hh:mmaaa");
 
 	public static DecimalFormat df = new DecimalFormat("#.##");
 	static {
@@ -51,17 +51,17 @@ public class PlainTextPrinter extends MatchPrinter {
 			shortDest.add(match);
 			shortlist.put(destination, shortDest);
 		}
-		log(matches.get(0).getOutboundFlight().getOrigin(), "Price,Destination,OutTime"); 
+		log(matches.get(0).getOutboundFlight().getOrigin(), "Price,Destination,OutTime");
 		for (String destination : shortlist.keySet()) {
 			List<FlightMatch> groupedMatches = shortlist.get(destination);
 			Collections.sort(groupedMatches, new DateMatchComparator());
 			for (FlightMatch match : groupedMatches) {
 				Flight outbound = match.getOutboundFlight();
 				Flight rtn = match.getReturnFlight();
-				String total = df.format(match.getTotal()); 
+				String total = df.format(match.getTotal());
 
 				log(outbound.getOrigin(), total + CSV_SEPARATOR + outbound.toPrintString(CSV_SEPARATOR) + CSV_SEPARATOR + rtn.toPrintString(CSV_SEPARATOR) + CSV_SEPARATOR + "\"" + toPlainTextString(match, outbound.getDestination(), total)+ "\"");
-			}	
+			}
 		}
 	}
 
@@ -83,11 +83,11 @@ public class PlainTextPrinter extends MatchPrinter {
 			e.printStackTrace();
 		}
 		try {
-			return airportName + " on " + targetDateFormat.format(match.getOutboundTime()) + " returning " + targetDateFormat.format(match.getReturnTime()) + " for €" + total + "</td></tr>";
+			return airportName + " on " + targetDateFormat.format(match.getOutboundTime()) + " returning " + targetDateFormat.format(match.getReturnTime()) + " for \uFFFD" + total + "</td></tr>";
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return null;
 	}
 

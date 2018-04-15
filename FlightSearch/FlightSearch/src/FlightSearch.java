@@ -65,21 +65,24 @@ public class FlightSearch {
 	/* Maximum trip return price to include in search results. */
 	final static int BUDGET_AMT = 75;
 	/* Number of months (from current) to include. */
-	final static int NUM_MONTHS = 7;
+	static int NUM_MONTHS = 7;
 	/* Start search from month current+START_OFFSET_MONTHS. */
 	final static int START_OFFSET_MONTHS = 0;
 	/* Include long weekends in search. */
 	final static boolean INCLUDE_LONGWEEKENDS = false;
 	/* Include UK & Ireland results in search. */
 	final static boolean INCLUDE_UKI = false;
-	
+
 	static int retryCount = 0;
 
 	public static void main(String[] args) throws Exception {
 		List<FlightMatch> matches = new ArrayList<FlightMatch>();
+		if (args.length > 0) {
+			NUM_MONTHS = Integer.parseInt(args[0]);
+		}
 
 		try {
-			log("Starting ..");
+			log("Starting .. looking for "+NUM_MONTHS+" months.");
 
 			//String from = "DUB";
 			Schedule schedule = getSchedule();
@@ -91,18 +94,18 @@ public class FlightSearch {
 						if (!route.startsWith("airport")) {
 							continue;
 						}
-						
+
 						String code = route.split(":")[1];
 
 						if (!INCLUDE_UKI && UKI_CODES.contains(code)) {
 							continue;
 						}
-						
+
 						log("Checking route: " + code);
 						Set<LocalDate> candidateOutboundDates = getCandidateOutboundDates(from, code, NUM_MONTHS, BUDGET_AMT);
 						for (LocalDate day : candidateOutboundDates) {
 							// found a candidate! let's check it out further
-							matches.addAll(getMatches(from, code, day, BUDGET_AMT));							
+							matches.addAll(getMatches(from, code, day, BUDGET_AMT));
 
 						}
 					}
@@ -127,9 +130,9 @@ public class FlightSearch {
 			return matches;
 		}
 
-		try { 
+		try {
 			log("Checking daily matches: " + from + "->" + to + " " + outDate.toString());
-			
+
 			LocalDate returnDate = calcNextDayOfWeek(outDate, DateTimeConstants.SUNDAY);
 			DailyFares dailyFares = getDailyFares(from, to, outDate, returnDate);
 
@@ -163,7 +166,7 @@ public class FlightSearch {
 					if (total <= budget) {
 						// we finally have a flight match..
 						matches.add(new FlightMatch(outbound, returnFlight));
-					}	
+					}
 				}
 			}
 		} catch(Exception e) {
@@ -301,7 +304,7 @@ public class FlightSearch {
 
 	/**
 	 * Retrieve a list of dates for the next numMonths that may have a return flight matching the budget.
-	 *  
+	 *
 	 * @param from
 	 * @param to
 	 * @param numMonths
@@ -335,10 +338,10 @@ public class FlightSearch {
 			for (Fare fare : thisMonthFare.getOutbound().getFares()) {
 				// thursday - saturday for long/short weekend outbound
 				LocalDate date = new LocalDate(fare.getDay());
-				if (!isOutboundDay(date)) { 
+				if (!isOutboundDay(date)) {
 					continue;
 				}
-				
+
 				// we assert that a single outbound flight must be less than 80% of total budget..
 				if (fare.getPrice() != null && fare.getPrice().getValue() <= (budget * 0.8)) {
 					outboundFares.put(date, fare);
@@ -377,11 +380,11 @@ public class FlightSearch {
 						}
 						double totalCost = (outboundFare.getPrice().getValue() + returnFare.getPrice().getValue());
 
-						if (totalCost <= budget) { 
+						if (totalCost <= budget) {
 							candidateDates.add(outboundDate);
 							log("Candidate daily fare: " + totalCost + " " + outboundDate.getDayOfWeek() + ":" + outboundFare.getDay() + " " + returnDate.getDayOfWeek() + ":"+ returnFare.getDay());
 							break;
-						}	
+						}
 					}
 				}
 			}
@@ -402,18 +405,18 @@ public class FlightSearch {
 		if (!INCLUDE_LONGWEEKENDS) {
 			return date.getDayOfWeek() == DateTimeConstants.FRIDAY || date.getDayOfWeek() == DateTimeConstants.SATURDAY;
 		}
-		
+
 		return (date.getDayOfWeek() == DateTimeConstants.THURSDAY || date.getDayOfWeek() == DateTimeConstants.FRIDAY || date.getDayOfWeek() == DateTimeConstants.SATURDAY);
 	}
-	
+
 	private static boolean isReturnDay(LocalDate date) {
 		if (!INCLUDE_LONGWEEKENDS) {
 			return date.getDayOfWeek() == DateTimeConstants.SUNDAY;
 		}
-		
+
 		return (date.getDayOfWeek() == DateTimeConstants.SUNDAY || date.getDayOfWeek() == DateTimeConstants.MONDAY);
 	}
-	
+
 	private static void log(Object s) throws IOException {
 		log(s, false);
 	}
